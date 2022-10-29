@@ -1,76 +1,110 @@
 package com.afarasadi.location_kmm.android
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.afarasadi.location_kmm.Greeting
-
-@Composable
-fun MyApplicationTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
-    val colors = if (darkTheme) {
-        darkColors(
-            primary = Color(0xFFBB86FC),
-            primaryVariant = Color(0xFF3700B3),
-            secondary = Color(0xFF03DAC5)
-        )
-    } else {
-        lightColors(
-            primary = Color(0xFF6200EE),
-            primaryVariant = Color(0xFF3700B3),
-            secondary = Color(0xFF03DAC5)
-        )
-    }
-    val typography = Typography(
-        body1 = TextStyle(
-            fontFamily = FontFamily.Default,
-            fontWeight = FontWeight.Normal,
-            fontSize = 16.sp
-        )
-    )
-    val shapes = Shapes(
-        small = RoundedCornerShape(4.dp),
-        medium = RoundedCornerShape(4.dp),
-        large = RoundedCornerShape(0.dp)
-    )
-
-    MaterialTheme(
-        colors = colors,
-        typography = typography,
-        shapes = shapes,
-        content = content
-    )
-}
+import androidx.core.app.ActivityCompat
+import com.afarasadi.location_kmm.KmmLocationProvider
+import com.afarasadi.location_kmm.configureActivity
+import com.afarasadi.location_kmm.model.Location
+import kotlinx.coroutines.flow.flow
 
 class MainActivity : ComponentActivity() {
+
+    private val permissions = arrayOf(
+        android.Manifest.permission.ACCESS_COARSE_LOCATION,
+        android.Manifest.permission.ACCESS_FINE_LOCATION
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        KmmLocationProvider.configureActivity(this)
+
         setContent {
+            var isPermissionsGranted by remember { mutableStateOf(this.isPermissionGranted() == true) }
+            var locationFlow by remember { mutableStateOf(flow<Location?> {}) }
+            val location by locationFlow.collectAsState(initial = null)
+
+            LaunchedEffect(isPermissionsGranted) {
+                if (isPermissionsGranted) {
+                    locationFlow = KmmLocationProvider.getLocation()
+                }
+            }
+
+            val activityResultLauncher =
+                rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestMultiplePermissions()) { results ->
+                    isPermissionsGranted = results.values.all { granted -> granted }
+                }
+
+
             MyApplicationTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Greeting(Greeting().greeting())
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .padding(18.dp), contentAlignment = Alignment.Center
+                    ) {
+                        if (!isPermissionsGranted) {
+                            Button(
+                                onClick = {
+                                    activityResultLauncher.launch(permissions)
+                                }
+                            ) {
+                                Text("Grant permission")
+                            }
+                        } else {
+                            LocationScreen(location)
+                        }
+                    }
                 }
             }
         }
     }
+
+    private fun isPermissionGranted(): Boolean? = ActivityCompat.checkSelfPermission(
+        this,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED ||
+            ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+
+
+}
+
+@Composable
+fun LocationScreen(location: Location? = null) {
+    if (location == null) {
+        Text("Loading . . . ")
+        return
+    }
+    Text("$location")
 }
 
 @Composable
