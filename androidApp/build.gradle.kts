@@ -17,7 +17,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.3.0"
+        kotlinCompilerExtensionVersion = "1.3.2"
     }
     packagingOptions {
         resources {
@@ -33,10 +33,16 @@ android {
 
 dependencies {
     implementation(project(":shared"))
-    implementation("androidx.compose.ui:ui:1.2.1")
-    implementation("androidx.compose.ui:ui-tooling:1.2.1")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.2.1")
-    implementation("androidx.compose.foundation:foundation:1.2.1")
-    implementation("androidx.compose.material:material:1.2.1")
-    implementation("androidx.activity:activity-compose:1.5.1")
+
+
+    val composeBom = platform("androidx.compose:compose-bom:2022.10.00")
+    implementation(composeBom)
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-tooling")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.material:material")
+
+
+    implementation("androidx.activity:activity-compose:1.6.1")
 }
