@@ -2,15 +2,44 @@ import SwiftUI
 import shared
 
 struct ContentView: View {
-	let greet = Greeting().greeting()
+    @State var location: Any? = nil
+    @ObservedObject var vm = LocationObservableObject(location: nil)
+    
+    init() {
+        vm.startObservingLocation()
+    }
 
 	var body: some View {
-		Text(greet)
+        if (vm.location == nil) {
+            Text("loading . . .")
+        } else {
+            let string = String(describing: vm.location!)
+            Text(string)
+        }
 	}
 }
 
-struct ContentView_Previews: PreviewProvider {
-	static var previews: some View {
-		ContentView()
-	}
+class LocationObservableObject : ObservableObject {
+    @Published var location: Location?
+    
+    
+    init(location: Location?) {
+        updateLocation(location: location)
+    }
+    
+    private func updateLocation(location: Location?) {
+        DispatchQueue.main.async {
+            self.location = location
+        }
+    }
+    
+    func startObservingLocation() {
+        KmmLocationProvider().getLocation().collect(collector: Collector<Location?> { emittedLocation in
+            print("Log: emittedLocation = \(String(describing: emittedLocation))")
+            self.updateLocation(location: emittedLocation)
+        }) { (error) in
+
+        }
+    }
 }
+
