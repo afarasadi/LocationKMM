@@ -4,6 +4,7 @@ import com.afarasadi.location_kmm.model.Location
 import kotlinx.coroutines.flow.Flow
 
 interface LocationProviderContract {
-    fun isPermissionGranted(): Boolean
-    fun requestPermission()
+    fun getLocation(): Flow<Location?>
 }
+
+expect fun getPlatformLocationProvider(): LocationProviderContract

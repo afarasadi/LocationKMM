@@ -16,7 +16,9 @@ import platform.CoreLocation.CLLocationManagerDelegateProtocol
 import platform.CoreLocation.kCLLocationAccuracyBestForNavigation
 import platform.darwin.NSObject
 
-actual object KmmLocationProvider {
+
+actual fun getPlatformLocationProvider(): LocationProviderContract = PlatformLocationProvider
+object PlatformLocationProvider : LocationProviderContract {
 
     private val locationManager: CLLocationManager by lazy {
         val manager = CLLocationManager().apply {
@@ -50,7 +52,7 @@ actual object KmmLocationProvider {
     private val locationDataChannelFlow = channelFlow<Location?> { }
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    actual fun getLocation(): Flow<Location?> {
+    override fun getLocation(): Flow<Location?> {
         locationManager.requestAlwaysAuthorization()
 
         return callbackFlow {

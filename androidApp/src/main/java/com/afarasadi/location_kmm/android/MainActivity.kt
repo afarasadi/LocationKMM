@@ -33,6 +33,8 @@ import kotlinx.coroutines.flow.flow
 
 class MainActivity : ComponentActivity() {
 
+    private val kmmLocationProvider = KmmLocationProvider()
+
     private val permissions = arrayOf(
         android.Manifest.permission.ACCESS_COARSE_LOCATION,
         android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -40,7 +42,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        KmmLocationProvider.configureActivity(this)
+        kmmLocationProvider.configureActivity(this)
 
         setContent {
             var isPermissionsGranted by remember { mutableStateOf(this.isPermissionGranted() == true) }
@@ -49,7 +51,7 @@ class MainActivity : ComponentActivity() {
 
             LaunchedEffect(isPermissionsGranted) {
                 if (isPermissionsGranted) {
-                    locationFlow = KmmLocationProvider.getLocation()
+                    locationFlow = kmmLocationProvider.getLocation()
                 }
             }
 

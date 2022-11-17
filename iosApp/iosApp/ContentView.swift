@@ -34,12 +34,13 @@ class LocationObservableObject : ObservableObject {
     }
     
     func startObservingLocation() {
-        KmmLocationProvider().getLocation().collect(collector: Collector<Location?> { emittedLocation in
+        KmmLocationProvider.companion.createInstance().getLocation().collect(collector: Collector<Location?> { emittedLocation in
             print("Log: emittedLocation = \(String(describing: emittedLocation))")
             self.updateLocation(location: emittedLocation)
         }) { (error) in
 
         }
+        KmmLocationProvider.companion.createInstance().getLocation().collectFlow()
     }
 }
 

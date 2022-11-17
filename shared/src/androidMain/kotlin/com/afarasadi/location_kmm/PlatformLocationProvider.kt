@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.os.Looper
 import android.util.Log
 import androidx.core.app.ActivityCompat
-import com.afarasadi.location_kmm.KmmLocationProvider.toKmmLocation
 import com.afarasadi.location_kmm.model.Location
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -25,7 +24,8 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
-actual object KmmLocationProvider {
+actual fun getPlatformLocationProvider() : LocationProviderContract = PlatformLocationProvider
+object PlatformLocationProvider : LocationProviderContract {
 
     var activity: WeakReference<Activity?> = WeakReference(null)
     private val currentActivity
@@ -52,7 +52,7 @@ actual object KmmLocationProvider {
     }
 
     @SuppressLint("MissingPermission")
-    actual fun getLocation(): Flow<Location?> {
+    override fun getLocation(): Flow<Location?> {
         Log.d(this::class.simpleName, "isConfigured2: $isConfigured")
 
         if (!isConfigured) {
