@@ -40,7 +40,6 @@ class LocationObservableObject : ObservableObject {
         }) { (error) in
 
         }
-        KmmLocationProvider.companion.createInstance().getLocation().collectFlow()
     }
 }
 
